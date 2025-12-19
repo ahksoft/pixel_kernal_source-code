@@ -1,8 +1,8 @@
 menu "Plexi Custom Patches"
-
+	  
 config PLEXI
-	  bool "Plexi custom patch support"
-	  default y
+	bool "Enable plexi custom kernel patches"
+	default y
 	  help
 		Enables the use of plexi-cores custom patches.
 
@@ -11,6 +11,39 @@ config PLEXI
 		and experience ptoblems building or booting your kernel,
 		you can toggle this option off and recompile to verify
 		whether plexicore's code is conflicting with your code.
+
+config PLEXI_KVER
+	  bool "Customize Kernel Version data"
+	  depends on PLEXI
+	  default n
+
+if PLEXI_KVER
+
+config PLEXI_KVER_VERSION
+	  string "Kernel version"
+	  default "6.1.145"
+
+config PLEXI_KVER_KMI
+	  int "KMI Generation"
+	  default 11
+
+config PLEXI_KVER_ANDROID
+	  int "Android Release"
+	  default 14
+
+config PLEXI_KVER_COMMIT
+	  string "Commit build suffix"
+	  default "gc1de4747ac59-ab14219743"
+
+config PLEXI_KVER_DATE
+	  string "Build date and time"
+	  default "Mon Oct 6 12:00:00 UTC 2025"
+
+config PLEXI_KVER_SUFFIX
+	  string "Kernel version suffix"
+	  default "#1 SMP PREEMPT aarch64 Android"
+
+endif
 
 config PLEXI_OVERRIDE_MODVER
 	  bool "Allow vendor module checksum mismatch on kernel boot"
