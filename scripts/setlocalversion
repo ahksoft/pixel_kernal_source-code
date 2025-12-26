@@ -15,7 +15,7 @@ usage() {
 	exit 1
 }
 
-res="6.1.145-android14-11-gc1de4747ac59-ab14219743"
+res="-android14-11-gc1de4747ac59-ab14219743"
 scm_only=false
 srctree=.
 android_release=
