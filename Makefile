@@ -4,6 +4,8 @@ PATCHLEVEL = 1
 SUBLEVEL = 145
 EXTRAVERSION =
 NAME = Curry Ramen
+KBUILD_BUILD_USER = user
+KBUILD_BUILD_HOST = host
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
@@ -397,7 +399,8 @@ include $(srctree)/scripts/Kbuild.include
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
-KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
+#KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
+KERNELVERSION = 6.1.145
 export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
 
 include $(srctree)/scripts/subarch.include
@@ -1352,6 +1355,7 @@ filechk_kernel.release = \
 
 # Store (new) KERNELRELEASE string in include/config/kernel.release
 include/config/kernel.release: FORCE
+	echo "${KERNELVERSION}
 	$(call filechk,kernel.release)
 
 # Additional helpers built in scripts/
@@ -2186,11 +2190,13 @@ checkstack:
 	$(PERL) $(srctree)/scripts/checkstack.pl $(CHECKSTACK_ARCH)
 
 kernelrelease:
-	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion \
+#	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion \
+	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) "-android14-11-gc1de4747ac59-ab14219743" \
 		$(srctree) $(BRANCH) $(KMI_GENERATION))"
 
 kernelversion:
-	@echo $(KERNELVERSION)
+	@echo "6.1.145-android14-11-gc1de4747ac59-ab14219743"
+#	@echo $(KERNELVERSION)
 
 image_name:
 	@echo $(KBUILD_IMAGE)
