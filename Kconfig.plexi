@@ -1,7 +1,7 @@
-menu "Plexi Custom Patches"
+menu "PlexiConfig"
 	  
 config PLEXI
-	bool "Enable plexi custom kernel patches"
+	bool "Enable plexicore custom kernel patches"
 	default y
 	  help
 		Enables the use of plexi-cores custom patches.
@@ -47,7 +47,7 @@ endif
 
 config PLEXI_BYPASS_CRC
 	  bool "Bypass CRC checksum verification for kernel modules"
-	  depends on PLEXI
+	  depends on PLEXI && MODULES && MODVERSIONS && !MODULE_SIG && !TRIM_UNUSED_KSYMS
 	  default y
 	  help
 		By default, the Linux (and Android) kernels are designed to
@@ -61,6 +61,39 @@ config PLEXI_BYPASS_CRC
 		If unsure, choose N here. If you encounter issues with
 		the kernel boot image not loading vendor modules from
 		your stock vendor dlkm image, you can choose Y here.
+
+if PLEXI_BYPASS_CRC
+
+config PLEXI_BYPASS_CRC_SILENT
+	bool "Hide version mismatch messages"
+	default n
+	help
+		When a version mismatch is found between a kernel module and
+		the kernel version, a warning is normally displayed. In our
+		CRC checksum bypass, we instruct the kernel to load the module
+		anyway. However, we still display a warning. Choosing Y here
+		will silence these warnings so they won't appear in the log.
+		This has no impact on actual kernel module loading.
+
+		Unless you are debugging a module loading problem or
+		enjoy debug warning messages, you can safely choose Y here.
+
+		Note: this option currently defaults to N because we don't
+		want to hide warning for users automatically. Once the user
+		is aware of the warnings and understands their cause, they
+		can decide for themselves whether they want to continue
+		seeing them or not.
+
+endif
+
+# files affected: drivers/mmc/core/core.c; kernel/module/version.c
+comment "Kernel module CRC checksum bypass unavailable"
+	depends on PLEXI && !MODULES || !MODVERSIONS || MODULE_SIG || TRIM_UNUSED_KSYMS
+#	help
+#		CRC checksum bypassing for kernel modules requires kernel
+#		modules and module versions to be enabled. The bypass is
+#		not available if module signatures or trimming of unused
+#		symbols from kernel modules options are enabled.
 
 #config PLEXI_DISABLE_DIRTY
 #	  bool "Disable '-dirty' kernel version tagging"

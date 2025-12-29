@@ -52,12 +52,16 @@ int check_version(const struct load_info *info,
 
 bad_version:
 #ifdef CONFIG_PLEXI_BYPASS_CRC
+#ifdef CONFIG_PLEXI_BYPASS_CRC_SILENT
+	return 1;
+#else
 	pr_warn("%s: disagrees about version of symbol %s, but continue\n", info->name, symname);
 	return 1;
+#endif // CONFIG_PLEXI_BYPASS_CRC_SILENT
 #else
 	pr_warn("%s: disagrees about version of symbol %s\n", info->name, symname);
 	return 0;
-#endif
+#endif // CONFIG_PLEXI_BYPASS_CRC
 }
 
 int check_modstruct_version(const struct load_info *info,
