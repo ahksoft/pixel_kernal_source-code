@@ -12,6 +12,7 @@ prebuilts/
 
 # Local configuration file (sdk path, etc)
 local.properties
+.bandenv
 .config
 .git.repo/*
 *.porig

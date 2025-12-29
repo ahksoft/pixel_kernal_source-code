@@ -4,10 +4,10 @@
 
 FILES="${FILES}
 arch/arm64/boot/Image.lz4
-arch/arm64/boot/Image.gz
+arch/arm64/boot/Image
 "
 
-BUILD_SYSTEM_DLKM=0
+BUILD_SYSTEM_DLKM=1
 
 BUILD_GKI_CERTIFICATION_TOOLS=0
 

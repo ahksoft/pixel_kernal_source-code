@@ -1355,7 +1355,7 @@ filechk_kernel.release = \
 
 # Store (new) KERNELRELEASE string in include/config/kernel.release
 include/config/kernel.release: FORCE
-	echo "${KERNELVERSION}
+	echo "${KERNELVERSION}"
 	$(call filechk,kernel.release)
 
 # Additional helpers built in scripts/
@@ -2190,12 +2190,13 @@ checkstack:
 	$(PERL) $(srctree)/scripts/checkstack.pl $(CHECKSTACK_ARCH)
 
 kernelrelease:
+	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
 #	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion \
-	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) "-android14-11-gc1de4747ac59-ab14219743" \
-		$(srctree) $(BRANCH) $(KMI_GENERATION))"
+#	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) "-android14-11-gc1de4747ac59-ab14219743" \
+#		$(srctree) $(BRANCH) $(KMI_GENERATION))"
 
 kernelversion:
-	@echo "6.1.145-android14-11-gc1de4747ac59-ab14219743"
+	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
 #	@echo $(KERNELVERSION)
 
 image_name:
