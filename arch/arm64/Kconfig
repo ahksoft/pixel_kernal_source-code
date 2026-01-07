@@ -2219,12 +2219,15 @@ config RANDOMIZE_MODULE_REGION_FULL
 	  particular case of region exhaustion, modules might be able to fall
 	  back to a larger 2GB area.
 
+if PLEXI_STACK_GUARD_FIX
+
 config CC_HAVE_STACKPROTECTOR_GLOBAL
 	def_bool $(cc-option,-mstack-protector-guard=global -mstack-protector-guard-reg=sp_el0)
 	help
-	  Probes the compiler for Global Stack Protector support. This is 
-	  required for stable builds on modern AOSP Clang versions (r574158+) 
-	  to avoid undefined __stack_chk_guard symbols.
+	  Probes the compiler for Global Stack Protector support. This helps resolve
+	  an issue resulting in undefined __stack_chk_guard symbols.
+
+endif
 
 config CC_HAVE_STACKPROTECTOR_SYSREG
 	# Only enable this if Global is NOT supported or if explicitly required

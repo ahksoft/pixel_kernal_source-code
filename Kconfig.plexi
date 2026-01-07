@@ -123,4 +123,29 @@ comment "Kernel module CRC checksum bypass unavailable"
 #
 #endmenu
 
+#comment "-----"
+
+config PLEXI_SUKI_COMPAT
+	bool "SukiSU patch for manager compatibility"
+	default y
+	depends on PLEXI && KSU
+	help
+		A compatibility patch to set kernelsu version from 13000 to 13490
+		for compatibility with current manager.
+
+
+config PLEXI_STACK_GUARD_FIX
+	bool "Use fix for undefined symbol '__stack_chk_guard'"
+	default n
+	depends on PLEXI
+	help
+		This changes the default behavior of Kconfig to use global stack protection
+		instead of sysreg and per_task. This should only be enabled if you get
+		the error:
+
+				Undefined symbol '__stack_chk_guard':
+
+		during linking of vmlinux.o.
+
+
 endmenu

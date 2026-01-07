@@ -68,7 +68,11 @@ ifeq ($(KSU_GITHUB_VERSION_COMMIT),)
     KSU_VERSION := $(shell expr 40000 + $(KSU_LOCAL_VERSION) - 2815)
     $(info -- $(REPO_NAME) version (local .git): $(KSU_VERSION))
   else
+ifeq ($(CONFIG_PLEXI_SUKI_COMPAT), y)
+    KSU_VERSION := 13490
+else
     KSU_VERSION := 13000
+endif
     $(warning -- Could not fetch version online or via local .git! Using fallback version: $(KSU_VERSION))
   endif
 else

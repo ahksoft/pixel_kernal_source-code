@@ -4,7 +4,7 @@ PATCHLEVEL = 1
 SUBLEVEL = 145
 EXTRAVERSION =
 NAME = Curry Ramen
-KBUILD_BUILD_USER = user
+KBUILD_BUILD_USER = raven_google_user
 KBUILD_BUILD_HOST = host
 
 # *DOCUMENTATION*
@@ -1206,7 +1206,7 @@ export KBUILD_IMAGE ?= vmlinux
 #
 # INSTALL_PATH specifies where to place the updated kernel and system map
 # images. Default is /boot, but you can set it to other values
-export	INSTALL_PATH ?= /boot
+export	INSTALL_PATH ?= ${KERNEL_HOME}/boot
 
 #
 # INSTALL_DTBS_PATH specifies a prefix for relocations required by build roots.
@@ -1220,7 +1220,7 @@ export INSTALL_DTBS_PATH ?= $(INSTALL_PATH)/dtbs/$(KERNELRELEASE)
 # relocations required by build roots.  This is not defined in the
 # makefile but the argument can be passed to make if needed.
 #
-
+INSTALL_MOD_PATH = ${KERNEL_HOME}/lkm
 MODLIB	= $(INSTALL_MOD_PATH)/lib/modules/$(KERNELRELEASE)
 export MODLIB
 
