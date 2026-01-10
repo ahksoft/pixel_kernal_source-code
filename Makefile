@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 6
 PATCHLEVEL = 1
-SUBLEVEL = 145
+SUBLEVEL = 157
 EXTRAVERSION =
 NAME = Curry Ramen
 KBUILD_BUILD_USER = raven_google_user
@@ -399,8 +399,7 @@ include $(srctree)/scripts/Kbuild.include
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
-#KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
-KERNELVERSION = 6.1.145
+KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
 export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
 
 include $(srctree)/scripts/subarch.include
@@ -423,8 +422,7 @@ include $(srctree)/scripts/subarch.include
 # Alternatively CROSS_COMPILE can be set in the environment.
 # Default value for CROSS_COMPILE is not to prefix executables
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
-ARCH		?= arm64
-CROSS_COMPILE	?= ~/android/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+ARCH		?= $(SUBARCH)
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
@@ -593,12 +591,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE \
 		   -Werror=implicit-function-declaration -Werror=implicit-int \
 		   -Werror=return-type -Wno-format-security \
-		   -std=gnu11 \
-		   -mcpu=cortex-a55 -fdiagnostics-color=always -pipe \
-		   -Wno-void-pointer-to-enum-cast -Wno-misleading-indentation -Wno-unused-function -Wno-bool-operation \
-		   -Wno-unsequenced -Wno-void-pointer-to-int-cast -Wno-unused-variable -Wno-pointer-to-int-cast -Wno-pointer-to-enum-cast \
-		   -Wno-fortify-source -Wno-strlcpy-strlcat-size -Wno-unused-result -Wno-deprecated -Wno-deprecated-declarations \
-		   -Wformat=0
+		   -std=gnu11
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_RUSTFLAGS := $(rust_common_flags) \
@@ -1355,7 +1348,7 @@ filechk_kernel.release = \
 
 # Store (new) KERNELRELEASE string in include/config/kernel.release
 include/config/kernel.release: FORCE
-	echo "${KERNELVERSION}"
+#	echo "${KERNELVERSION}"
 	$(call filechk,kernel.release)
 
 # Additional helpers built in scripts/
@@ -2190,14 +2183,15 @@ checkstack:
 	$(PERL) $(srctree)/scripts/checkstack.pl $(CHECKSTACK_ARCH)
 
 kernelrelease:
-	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
+	@echo 6.1.157-android14-11-g2c0cf7b3a827-ab14641137
+#	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
 #	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion \
 #	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) "-android14-11-gc1de4747ac59-ab14219743" \
 #		$(srctree) $(BRANCH) $(KMI_GENERATION))"
 
 kernelversion:
-	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
-#	@echo $(KERNELVERSION)
+#	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
+	@echo $(KERNELVERSION)
 
 image_name:
 	@echo $(KBUILD_IMAGE)

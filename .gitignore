@@ -20,6 +20,10 @@ local.properties
 *.rej
 *.patch
 dotconfig
+band
+
+# google driver modules
+drivers/soc/gs
 
 # Build output
 out-dev/*
