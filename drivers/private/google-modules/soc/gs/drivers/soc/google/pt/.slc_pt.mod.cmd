@@ -1,0 +1,1 @@
+cmd_/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/pt/slc_pt.mod := printf '%s\n'   pt.o pt_trace_points.o | awk '!x[$$0]++ { print("/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/pt/"$$0) }' > /root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/pt/slc_pt.mod

@@ -1,0 +1,1 @@
+cmd_/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/tty/serial/exynos_tty.mod := printf '%s\n'   exynos_tty.o | awk '!x[$$0]++ { print("/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/tty/serial/"$$0) }' > /root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/tty/serial/exynos_tty.mod

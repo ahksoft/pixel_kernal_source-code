@@ -191,6 +191,13 @@ EXPORT_SYMBOL(vfs_getattr);
  *
  * 0 will be returned on success, and a -ve error code if unsuccessful.
  */
+
+
+#ifdef CONFIG_KSU_SUSFS
+extern bool ksu_init_rc_hook __read_mostly;
+extern void ksu_handle_vfs_fstat(int fd, loff_t *kstat_size_ptr);
+#endif // #ifdef CONFIG_KSU_SUSFS
+
 int vfs_fstat(int fd, struct kstat *stat)
 {
 	struct fd f;
@@ -200,6 +207,11 @@ int vfs_fstat(int fd, struct kstat *stat)
 	if (!f.file)
 		return -EBADF;
 	error = vfs_getattr(&f.file->f_path, stat, STATX_BASIC_STATS, 0);
+#ifdef CONFIG_KSU_SUSFS
+	if (unlikely(ksu_init_rc_hook)) {
+		ksu_handle_vfs_fstat(fd, &stat->size);
+	}
+#endif // #ifdef CONFIG_KSU_SUSFS
 	fdput(f);
 	return error;
 }
@@ -219,8 +231,8 @@ int getname_statx_lookup_flags(int flags)
 }
 
 #ifdef CONFIG_KSU_SUSFS
-extern bool __ksu_is_allow_uid_for_current(uid_t uid);
 extern bool ksu_su_compat_enabled __read_mostly;
+extern bool __ksu_is_allow_uid_for_current(uid_t uid);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
 extern int ksu_handle_stat(int *dfd, struct filename **filename, int *flags);
 #else
@@ -251,7 +263,7 @@ static int vfs_statx(int dfd, struct filename *filename, int flags,
 	int error;
 
 #ifdef CONFIG_KSU_SUSFS
-        if (likely(susfs_is_current_proc_umounted()) || !ksu_su_compat_enabled) {
+	if (likely(susfs_is_current_proc_umounted()) || !ksu_su_compat_enabled) {
 		goto orig_flow;
 	}
 
