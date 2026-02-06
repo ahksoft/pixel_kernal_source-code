@@ -34,10 +34,6 @@
 #endif
 #include "dynamic_manager.h"
 
-#ifdef CONFIG_KSU_SUSFS
-bool susfs_is_boot_completed_triggered __read_mostly = false;
-#endif // #ifdef CONFIG_KSU_SUSFS
-
 // Permission check functions
 bool only_manager(void)
 {
@@ -128,8 +124,8 @@ static int do_report_event(void __user *arg)
             boot_complete_lock = true;
             pr_info("boot_complete triggered\n");
             on_boot_completed();
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-            susfs_is_boot_completed_triggered = true;
+#ifdef CONFIG_KSU_SUSFS
+            susfs_start_sdcard_monitor_fn();
 #endif
         }
         break;
@@ -256,14 +252,18 @@ static int do_uid_should_umount(void __user *arg)
     return 0;
 }
 
-static int do_get_manager_uid(void __user *arg)
+// this api mostly use case is tell zygisk impl who is the root manager
+// we return last use manager's uid to make them can inject ZYGISK_ENABLED=1
+// if user are not open any manager yet, we return the first registered manager
+// if no manager registered, return -1 (KSU_INVALID_APPID)
+static int do_get_manager_appid(void __user *arg)
 {
-    struct ksu_get_manager_uid_cmd cmd;
+    struct ksu_get_manager_appid_cmd cmd;
 
-    cmd.uid = ksu_get_manager_uid();
+    cmd.appid = ksu_last_manager_appid;
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_manager_uid: copy_to_user failed\n");
+        pr_err("get_manager_appid: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -685,11 +685,11 @@ static int do_dynamic_manager(void __user *arg)
         return -EFAULT;
     }
 
-    int ret = ksu_handle_dynamic_manager(&cmd.config);
+    int ret = ksu_handle_dynamic_manager(&cmd);
     if (ret)
         return ret;
 
-    if (cmd.config.operation == DYNAMIC_MANAGER_OP_GET &&
+    if (cmd.operation == DYNAMIC_MANAGER_OP_GET &&
         copy_to_user(arg, &cmd, sizeof(cmd))) {
         pr_err("dynamic_manager: copy_to_user failed\n");
         return -EFAULT;
@@ -698,16 +698,23 @@ static int do_dynamic_manager(void __user *arg)
     return 0;
 }
 
+extern int ksu_handle_get_managers_cmd(struct ksu_get_managers_cmd __user *arg,
+                                       struct ksu_get_managers_cmd *cmd);
+
 static int do_get_managers(void __user *arg)
 {
     struct ksu_get_managers_cmd cmd;
 
-    int ret = ksu_get_active_managers(&cmd.manager_info);
-    if (ret)
-        return ret;
+    if (copy_from_user(&cmd, arg, sizeof(struct ksu_get_managers_cmd))) {
+        return -EFAULT;
+    }
 
-    if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_managers: copy_from_user failed\n");
+    int ret = ksu_handle_get_managers_cmd(arg, &cmd);
+    if (ret) {
+        return ret;
+    }
+
+    if (copy_to_user(arg, &cmd, sizeof(struct ksu_get_managers_cmd))) {
         return -EFAULT;
     }
 
@@ -752,9 +759,9 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
       .name = "UID_SHOULD_UMOUNT",
       .handler = do_uid_should_umount,
       .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_GET_MANAGER_UID,
-      .name = "GET_MANAGER_UID",
-      .handler = do_get_manager_uid,
+    { .cmd = KSU_IOCTL_GET_MANAGER_APPID,
+      .name = "GET_MANAGER_APPID",
+      .handler = do_get_manager_appid,
       .perm_check = manager_or_root },
     { .cmd = KSU_IOCTL_GET_APP_PROFILE,
       .name = "GET_APP_PROFILE",
@@ -803,7 +810,7 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_DYNAMIC_MANAGER,
       .name = "SET_DYNAMIC_MANAGER",
       .handler = do_dynamic_manager,
-      .perm_check = manager_or_root },
+      .perm_check = only_root },
     { .cmd = KSU_IOCTL_GET_MANAGERS,
       .name = "GET_MANAGERS",
       .handler = do_get_managers,
@@ -973,7 +980,8 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
     int cmd = (int)PT_REGS_PARM3(real_regs);
     void __user **arg = (void __user **)&PT_REGS_SYSCALL_PARM4(real_regs);
 
-    return ksu_handle_sys_reboot(magic1, magic2, cmd, arg);
+    ksu_handle_sys_reboot(magic1, magic2, cmd, arg);
+    return 0;
 }
 
 static struct kprobe reboot_kp = {

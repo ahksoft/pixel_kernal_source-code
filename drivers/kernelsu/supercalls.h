@@ -55,8 +55,8 @@ struct ksu_uid_should_umount_cmd {
     __u8 should_umount; // Output: true if should umount, false otherwise
 };
 
-struct ksu_get_manager_uid_cmd {
-    __u32 uid; // Output: manager UID
+struct ksu_get_manager_appid_cmd {
+    __u32 appid; // Output: manager app id
 };
 
 struct ksu_get_app_profile_cmd {
@@ -121,21 +121,25 @@ struct ksu_enable_kpm_cmd {
     __u8 enabled; // Output: true if KPM is enabled
 };
 
+#define DYNAMIC_MANAGER_OP_SET 0
+#define DYNAMIC_MANAGER_OP_GET 1
+#define DYNAMIC_MANAGER_OP_WIPE 2
 struct ksu_dynamic_manager_cmd {
-    struct dynamic_manager_user_config
-        config; // Input/Output: dynamic manager config
+    unsigned int operation;
+    unsigned int size;
+    char hash[64];
 };
+
+struct ksu_manager_entry {
+    __u32 uid;
+    __u8 signature_index;
+} __attribute__((packed));
 
 struct ksu_get_managers_cmd {
-    struct manager_list_info manager_info; // Output: manager list information
-};
-
-struct ksu_enable_uid_scanner_cmd {
-    __u32 operation; // Input: operation type (UID_SCANNER_OP_GET_STATUS, UID_SCANNER_OP_TOGGLE, UID_SCANNER_OP_CLEAR_ENV)
-    __u32 enabled; // Input: enable or disable (for UID_SCANNER_OP_TOGGLE)
-    void __user *
-        status_ptr; // Input: pointer to store status (for UID_SCANNER_OP_GET_STATUS)
-};
+    __u16 count; // Input / Output: number of managers in array
+    __u16 total_count; // Output: total number of managers in requested list
+    struct ksu_manager_entry managers[]; // Output: Array of active manager
+} __attribute__((packed));
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)
@@ -147,7 +151,7 @@ struct ksu_enable_uid_scanner_cmd {
 #define KSU_IOCTL_GET_DENY_LIST _IOC(_IOC_READ | _IOC_WRITE, 'K', 7, 0)
 #define KSU_IOCTL_UID_GRANTED_ROOT _IOC(_IOC_READ | _IOC_WRITE, 'K', 8, 0)
 #define KSU_IOCTL_UID_SHOULD_UMOUNT _IOC(_IOC_READ | _IOC_WRITE, 'K', 9, 0)
-#define KSU_IOCTL_GET_MANAGER_UID _IOC(_IOC_READ, 'K', 10, 0)
+#define KSU_IOCTL_GET_MANAGER_APPID _IOC(_IOC_READ, 'K', 10, 0)
 #define KSU_IOCTL_GET_APP_PROFILE _IOC(_IOC_READ | _IOC_WRITE, 'K', 11, 0)
 #define KSU_IOCTL_SET_APP_PROFILE _IOC(_IOC_WRITE, 'K', 12, 0)
 #define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ | _IOC_WRITE, 'K', 13, 0)
@@ -156,12 +160,14 @@ struct ksu_enable_uid_scanner_cmd {
 #define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ | _IOC_WRITE, 'K', 16, 0)
 #define KSU_IOCTL_NUKE_EXT4_SYSFS _IOC(_IOC_WRITE, 'K', 17, 0)
 #define KSU_IOCTL_ADD_TRY_UMOUNT _IOC(_IOC_WRITE, 'K', 18, 0)
+
 // Other IOCTL command definitions
 #define KSU_IOCTL_GET_FULL_VERSION _IOC(_IOC_READ, 'K', 100, 0)
 #define KSU_IOCTL_HOOK_TYPE _IOC(_IOC_READ, 'K', 101, 0)
 #define KSU_IOCTL_ENABLE_KPM _IOC(_IOC_READ, 'K', 102, 0)
 #define KSU_IOCTL_DYNAMIC_MANAGER _IOC(_IOC_READ | _IOC_WRITE, 'K', 103, 0)
-#define KSU_IOCTL_GET_MANAGERS _IOC(_IOC_READ | _IOC_WRITE, 'K', 104, 0)
+// 104 = old get_managers, deprecated
+#define KSU_IOCTL_GET_MANAGERS _IOC(_IOC_READ | _IOC_WRITE, 'K', 105, 0)
 
 // IOCTL handler types
 typedef int (*ksu_ioctl_handler_t)(void __user *arg);

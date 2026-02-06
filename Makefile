@@ -7,8 +7,8 @@ NAME = Curry Ramen
 KBUILD_BUILD_USER = raven_google_user
 KBUILD_BUILD_HOST = host
 SRC_ROOT=${PWD}
-KCONFIG_EXT_MODULES_PREFIX=${SRC_ROOT}/drivers/
-KCONFIG_SOC_GS_PREFIX=${SRC_ROOT}/drivers/private/google-modules/soc/gs/
+#KCONFIG_EXT_MODULES_PREFIX=${SRC_ROOT}/drivers/
+#KCONFIG_SOC_GS_PREFIX=${SRC_ROOT}/drivers/private/google-modules/soc/gs/
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

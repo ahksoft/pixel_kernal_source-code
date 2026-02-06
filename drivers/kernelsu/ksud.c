@@ -136,7 +136,7 @@ void on_boot_completed(void)
 {
     ksu_boot_completed = true;
     pr_info("on_boot_completed!\n");
-    track_throne(true);
+    track_throne(true, false);
 }
 
 static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
@@ -610,6 +610,7 @@ void ksu_handle_initrc(struct file *file)
     file->f_op = &fops_proxy;
 }
 
+#ifndef CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK
 static void ksu_handle_sys_read_fd(unsigned int fd)
 {
     struct file *file = fget(fd);
@@ -617,13 +618,10 @@ static void ksu_handle_sys_read_fd(unsigned int fd)
         return;
     }
 
-    if (!is_init_rc(file)) {
-        return;
-    }
-
     ksu_handle_initrc(file);
     fput(file);
 }
+#endif
 
 int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
                         size_t *count_ptr)

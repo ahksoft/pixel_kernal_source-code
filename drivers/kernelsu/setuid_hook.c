@@ -13,10 +13,7 @@
 #include <linux/types.h>
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
-
-#ifdef CONFIG_KSU_SUSFS
-#include <linux/susfs_def.h>
-#endif // #ifdef CONFIG_KSU_SUSFS
+#include <linux/namei.h>
 
 #include "allowlist.h"
 #include "setuid_hook.h"
@@ -32,30 +29,52 @@
 #include "kernel_umount.h"
 #include "sulog.h"
 
-#ifdef CONFIG_KSU_SUSFS
-static inline bool is_zygote_isolated_service_uid(uid_t uid)
-{
-    uid %= 100000;
-    return (uid >= 99000 && uid < 100000);
-}
-
-static inline bool is_zygote_normal_app_uid(uid_t uid)
-{
-    uid %= 100000;
-    return (uid >= 10000 && uid < 19999);
-}
-
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-extern void susfs_run_sus_path_loop(uid_t uid);
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-extern void susfs_reorder_mnt_id(void);
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-#endif // #ifdef CONFIG_KSU_SUSFS
-
 extern void disable_seccomp(struct task_struct *tsk);
 
-#ifndef CONFIG_KSU_SUSFS
+static inline void ksu_set_file_immutable(const char *path_name, bool immutable)
+{
+    struct path path;
+    struct inode *inode;
+    int error;
+
+    error = kern_path(path_name, LOOKUP_FOLLOW, &path);
+    if (error) {
+        return;
+    }
+
+    inode = d_inode(path.dentry);
+
+    error = mnt_want_write(path.mnt);
+    if (error) {
+        path_put(&path);
+        return;
+    }
+
+    inode_lock(inode);
+    if (immutable) {
+        inode->i_flags |= S_IMMUTABLE;
+    } else {
+        inode->i_flags &= ~S_IMMUTABLE;
+    }
+    inode_unlock(inode);
+
+    mnt_drop_write(path.mnt);
+    path_put(&path);
+}
+
+static inline void ksu_set_ksud_status(uid_t new_uid)
+{
+    u16 appid = new_uid % PER_USER_RANGE;
+    int signature_index = ksu_get_manager_signature_index_by_appid(appid);
+    if (signature_index != 255) {
+        ksu_set_file_immutable("/data/adb/ksud", false);
+        pr_info("Mark /data/adb/ksud read write");
+    } else {
+        ksu_set_file_immutable("/data/adb/ksud", true);
+        pr_info("Mark /data/adb/ksud read only");
+    }
+}
+
 int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid) // (new_euid)
 {
     // We only interest in process spwaned by zygote
@@ -63,18 +82,18 @@ int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid) // (new_euid)
         return 0;
     }
 
-    if (old_uid != new_uid)
+    if (old_uid != new_uid) {
         pr_info("handle_setresuid from %d to %d\n", old_uid, new_uid);
-
-    // if on private space, see if its possibly the manager
-    if (new_uid > PER_USER_RANGE &&
-        new_uid % PER_USER_RANGE == ksu_get_manager_uid()) {
-        ksu_set_manager_uid(new_uid);
+#if __SULOG_GATE
+        ksu_sulog_report_syscall(new_uid, NULL, "setuid", NULL);
+#endif
     }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-    if (ksu_get_manager_uid() == new_uid) {
+    if (ksu_is_manager_uid(new_uid)) {
         pr_info("install fd for ksu manager(uid=%d)\n", new_uid);
+        ksu_mark_manager(new_uid);
+        ksu_set_ksud_status(new_uid);
         ksu_install_fd();
         spin_lock_irq(&current->sighand->siglock);
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
@@ -108,8 +127,10 @@ int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid) // (new_euid)
         disable_seccomp(current);
         spin_unlock_irq(&current->sighand->siglock);
 
-        if (ksu_get_manager_uid() == new_uid) {
+        if (ksu_is_manager_uid(new_uid)) {
             pr_info("install fd for ksu manager(uid=%d)\n", new_uid);
+            ksu_mark_manager(new_uid);
+            ksu_set_ksud_status(new_uid);
             ksu_install_fd();
         }
 
@@ -122,88 +143,6 @@ int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid) // (new_euid)
 
     return 0;
 }
-#else
-int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid)
-{
-    // We only interest in process spwaned by zygote
-    if (!is_zygote(current_cred())) {
-        return 0;
-    }
-
-#if __SULOG_GATE
-    ksu_sulog_report_syscall(new_uid, NULL, "setuid", NULL);
-#endif
-
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-    // Check if spawned process is isolated service first, and force to do umount if so
-    if (is_zygote_isolated_service_uid(new_uid)) {
-        goto do_umount;
-    }
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-
-    // - Since ksu maanger app uid is excluded in allow_list_arr, so ksu_uid_should_umount(manager_uid)
-    //   will always return true, that's why we need to explicitly check if new_uid belongs to
-    //   ksu manager
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-    if (ksu_get_manager_uid() == new_uid) {
-        pr_info("install fd for ksu manager(uid=%d)\n", new_uid);
-        ksu_install_fd();
-        spin_lock_irq(&current->sighand->siglock);
-        ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
-        spin_unlock_irq(&current->sighand->siglock);
-        return 0;
-    }
-
-    if (ksu_is_allow_uid_for_current(new_uid)) {
-        if (current->seccomp.mode == SECCOMP_MODE_FILTER &&
-            current->seccomp.filter) {
-            spin_lock_irq(&current->sighand->siglock);
-            ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
-            spin_unlock_irq(&current->sighand->siglock);
-        }
-    }
-
-#else // #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-    if (ksu_is_allow_uid_for_current(new_uid)) {
-        spin_lock_irq(&current->sighand->siglock);
-        disable_seccomp(current);
-        spin_unlock_irq(&current->sighand->siglock);
-
-        if (ksu_get_manager_uid() == new_uid) {
-            pr_info("install fd for ksu manager(uid=%d)\n", new_uid);
-            ksu_install_fd();
-        }
-
-        return 0;
-    }
-#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-
-    // Check if spawned process is normal user app and needs to be umounted
-    if (likely(is_zygote_normal_app_uid(new_uid) &&
-               ksu_uid_should_umount(new_uid))) {
-        goto do_umount;
-    }
-
-    return 0;
-
-do_umount:
-    // Handle kernel umount
-    ksu_handle_umount(old_uid, new_uid);
-
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-    // We can reorder the mnt_id now after all sus mounts are umounted
-    susfs_reorder_mnt_id();
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-    susfs_run_sus_path_loop(new_uid);
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-
-    susfs_set_current_proc_umounted();
-
-    return 0;
-}
-#endif // #ifndef CONFIG_KSU_SUSFS
 
 int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {

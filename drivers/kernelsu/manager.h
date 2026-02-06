@@ -3,58 +3,25 @@
 
 #include <linux/cred.h>
 #include <linux/types.h>
+#include "allowlist.h"
 
-#define KSU_INVALID_UID -1
+#define PER_USER_RANGE 100000
+#define KSU_INVALID_APPID -1
+extern u16 ksu_last_manager_appid;
 
-extern uid_t ksu_manager_uid; // DO NOT DIRECT USE
-
-extern bool ksu_is_any_manager(uid_t uid);
-extern void ksu_add_manager(uid_t uid, int signature_index);
-extern void ksu_remove_manager(uid_t uid);
-extern int ksu_get_manager_signature_index(uid_t uid);
-
-static inline bool ksu_is_manager_uid_valid(void)
+static inline void ksu_mark_manager(u32 uid)
 {
-    return ksu_manager_uid != KSU_INVALID_UID;
+    ksu_last_manager_appid = uid % PER_USER_RANGE;
 }
 
-#ifndef CONFIG_KSU_SUSFS
-static inline bool is_manager(void)
-{
-    return unlikely(ksu_is_any_manager(current_uid().val) ||
-                    (ksu_manager_uid != KSU_INVALID_UID &&
-                     ksu_manager_uid == current_uid().val));
-}
-#else
-static inline bool is_manager()
-{
-    return unlikely((ksu_manager_uid == current_uid().val % 100000) ||
-                    (ksu_manager_uid != KSU_INVALID_UID &&
-                     ksu_manager_uid == current_uid().val % 100000));
-}
-#endif
-
-static inline uid_t ksu_get_manager_uid(void)
-{
-    return ksu_manager_uid;
-}
-
-#ifndef CONFIG_KSU_SUSFS
-static inline void ksu_set_manager_uid(uid_t uid)
-{
-    ksu_manager_uid = uid;
-}
-#else
-static inline void ksu_set_manager_uid(uid_t uid)
-{
-    ksu_manager_uid = uid % 100000;
-}
-#endif
-
-static inline void ksu_invalidate_manager_uid(void)
-{
-    ksu_manager_uid = KSU_INVALID_UID;
-}
+extern bool is_manager(void);
+bool ksu_is_manager_appid(u16 appid);
+extern bool ksu_is_manager_uid(u32 uid);
+extern void ksu_register_manager(u32 uid, u8 signature_index);
+extern void ksu_unregister_manager(u32 uid);
+extern void ksu_unregister_manager_by_signature_index(u8 signature_index);
+extern int ksu_get_manager_signature_index_by_appid(u16 appid);
+extern bool ksu_has_manager(void);
 
 int ksu_observer_init(void);
 void ksu_observer_exit(void);
