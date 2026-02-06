@@ -1,9 +1,0 @@
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/core.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/fair.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/init.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/procfs_node.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/rt.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/cpufreq_gov.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/topology.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/pelt.o
-/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/soc/google/vh/kernel/sched/sched_lib.o

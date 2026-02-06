@@ -1,1 +1,0 @@
-cmd_/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/dma/pl330.mod := printf '%s\n'   pl330.o | awk '!x[$$0]++ { print("/root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/dma/"$$0) }' > /root/buildroot/kernel-raviole-14223906/private/google-modules/soc/gs/drivers/dma/pl330.mod

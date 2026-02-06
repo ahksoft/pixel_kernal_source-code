@@ -152,49 +152,55 @@ comment "--Kernel module CRC checksum bypass unavailable--"
 #		the kernel version.
 #
 #		Choosing Y disables that functionality.
-
-config PLEXI_RAVIOLE_EXT
-	bool "Use raviole-specific external modules"
-	default n
-	help
-		This allows for building in the external modules included in the
-		KERNEL_HOME\/private\/devices\/google\/raviole dir.
-		
-		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
-		
-		If unsure, select N
-
-config PLEXI_GS101_EXT
-	bool "Use gs101-specific external modules"
-	default n
-	help
-		This allows for building in the external modules included in the
-		KERNEL_HOME\/private\/devices\/google\/gs101 dir.
-		
-		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
-		
-		If unsure, select N
-
-
-if PLEXI_RAVIOLE_EXT
-
-menu "External raviole modules"
-
-source "drivers/private/devices/google/raviole/Kconfig.ext.raviole"
-
-endmenu
-
-endif
-
-if PLEXI_GS101_EXT
-
-menu "External gs101 modules"
-
-source "drivers/private/devices/google/gs101/Kconfig.ext.gs101"
-
-endmenu
-
-endif
+#config PLEXI_USE_EXT
+#	def_bool n
+#
+#if PLEXI_USE_EXT
+#
+#config PLEXI_RAVIOLE_EXT
+#	bool "Use raviole-specific external modules"
+#	default n
+#	help
+#		This allows for building in the external modules included in the
+#		KERNEL_HOME\/private\/devices\/google\/raviole dir.
+#		
+#		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
+#		
+#		If unsure, select N
+#
+#config PLEXI_GS101_EXT
+#	bool "Use gs101-specific external modules"
+#	default n
+#	help
+#		This allows for building in the external modules included in the
+#		KERNEL_HOME\/private\/devices\/google\/gs101 dir.
+#		
+#		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
+#		
+#		If unsure, select N
+#
+#
+#if PLEXI_RAVIOLE_EXT
+#
+#menu "External raviole modules"
+#
+#source "drivers/private/devices/google/raviole/Kconfig.ext.raviole"
+#
+#endmenu
+#
+#endif
+#
+#if PLEXI_GS101_EXT
+#
+#menu "External gs101 modules"
+#
+#source "drivers/private/devices/google/gs101/Kconfig.ext.gs101"
+#
+#endmenu
+#
+#endif
+#
+#endif
 
 endmenu
 
