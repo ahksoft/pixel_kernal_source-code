@@ -12,9 +12,10 @@ config PLEXI
 		you can toggle this option off and recompile to verify
 		whether plexicore's code is conflicting with your code.
 
+if PLEXI
+
 config PLEXI_KVER
 	  bool "Customize Kernel Version data"
-	  depends on PLEXI
 	  default n
 
 if PLEXI_KVER
@@ -44,10 +45,53 @@ config PLEXI_KVER_SUFFIX
 	  default "#1 SMP PREEMPT aarch64 Android"
 
 endif
+# if PLEXI_KVER
+
+#config PLEXI_TEST
+#	  bool "Test option"
+#	  depends on PLEXI && 64BIT
+#	depends on KSU != m
+#	  select PLEXI_TESTT
+#	  default n
+#	  help
+#		This is a test. This is only a test.
+#
+#
+#menu "Plexi Test"
+#	depends on PLEXI_TESTT
+#
+#endmenu
+
+#comment "-----"
+
+config PLEXI_SUKI_COMPAT
+	bool "SukiSU patch for manager compatibility"
+	default y
+	depends on KSU
+	help
+		A compatibility patch to set kernelsu version from 13000 to 13500
+		for compatibility with current manager.
+
+
+config PLEXI_STACK_GUARD_FIX
+	bool "Use fix for undefined symbol '__stack_chk_guard'"
+	default n
+	help
+		This changes the default behavior of Kconfig to use global stack protection
+		instead of sysreg and per_task. This should only be enabled if you get
+		the error:
+
+				Undefined symbol '__stack_chk_guard':
+
+		during linking of vmlinux.o.
+
+if MODULES
+
+menu "Modules"
 
 config PLEXI_BYPASS_CRC
 	  bool "Bypass CRC checksum verification for kernel modules"
-	  depends on PLEXI && MODULES && MODVERSIONS && !MODULE_SIG && !TRIM_UNUSED_KSYMS
+	  depends on MODULES && MODVERSIONS && !MODULE_SIG && !TRIM_UNUSED_KSYMS
 	  default y
 	  help
 		By default, the Linux (and Android) kernels are designed to
@@ -85,10 +129,11 @@ config PLEXI_BYPASS_CRC_SILENT
 		seeing them or not.
 
 endif
+# if PLEXI_BYPASS_CRC
 
 # files affected: drivers/mmc/core/core.c; kernel/module/version.c
-comment "Kernel module CRC checksum bypass unavailable"
-	depends on PLEXI && !MODULES || !MODVERSIONS || MODULE_SIG || TRIM_UNUSED_KSYMS
+comment "--Kernel module CRC checksum bypass unavailable--"
+	depends on !PLEXI_BYPASS_CRC
 #	help
 #		CRC checksum bypassing for kernel modules requires kernel
 #		modules and module versions to be enabled. The bypass is
@@ -107,45 +152,60 @@ comment "Kernel module CRC checksum bypass unavailable"
 #		the kernel version.
 #
 #		Choosing Y disables that functionality.
-
-#config PLEXI_TEST
-#	  bool "Test option"
-#	  depends on PLEXI && 64BIT
-#	depends on KSU != m
-#	  select PLEXI_TESTT
-#	  default n
-#	  help
-#		This is a test. This is only a test.
+#config PLEXI_USE_EXT
+#	def_bool n
+#
+#if PLEXI_USE_EXT
+#
+#config PLEXI_RAVIOLE_EXT
+#	bool "Use raviole-specific external modules"
+#	default n
+#	help
+#		This allows for building in the external modules included in the
+#		KERNEL_HOME\/private\/devices\/google\/raviole dir.
+#		
+#		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
+#		
+#		If unsure, select N
+#
+#config PLEXI_GS101_EXT
+#	bool "Use gs101-specific external modules"
+#	default n
+#	help
+#		This allows for building in the external modules included in the
+#		KERNEL_HOME\/private\/devices\/google\/gs101 dir.
+#		
+#		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
+#		
+#		If unsure, select N
 #
 #
-#menu "Plexi Test"
-#	depends on PLEXI_TESTT
+#if PLEXI_RAVIOLE_EXT
+#
+#menu "External raviole modules"
+#
+#source "drivers/private/devices/google/raviole/Kconfig.ext.raviole"
 #
 #endmenu
+#
+#endif
+#
+#if PLEXI_GS101_EXT
+#
+#menu "External gs101 modules"
+#
+#source "drivers/private/devices/google/gs101/Kconfig.ext.gs101"
+#
+#endmenu
+#
+#endif
+#
+#endif
 
-#comment "-----"
+endmenu
 
-config PLEXI_SUKI_COMPAT
-	bool "SukiSU patch for manager compatibility"
-	default y
-	depends on PLEXI && KSU
-	help
-		A compatibility patch to set kernelsu version from 13000 to 13490
-		for compatibility with current manager.
+endif
 
-
-config PLEXI_STACK_GUARD_FIX
-	bool "Use fix for undefined symbol '__stack_chk_guard'"
-	default n
-	depends on PLEXI
-	help
-		This changes the default behavior of Kconfig to use global stack protection
-		instead of sysreg and per_task. This should only be enabled if you get
-		the error:
-
-				Undefined symbol '__stack_chk_guard':
-
-		during linking of vmlinux.o.
-
+endif
 
 endmenu

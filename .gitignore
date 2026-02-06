@@ -6,6 +6,7 @@ build/
 KernelSU/
 susfs4ksu/
 prebuilts/
+resukisu/
 
 # image files
 *.img

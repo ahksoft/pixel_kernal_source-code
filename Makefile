@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 6
 PATCHLEVEL = 1
-SUBLEVEL = 157
+SUBLEVEL = 145
 EXTRAVERSION =
 NAME = Curry Ramen
 KBUILD_BUILD_USER = raven_google_user
 KBUILD_BUILD_HOST = host
+SRC_ROOT=${PWD}
+#KCONFIG_EXT_MODULES_PREFIX=${SRC_ROOT}/drivers/
+#KCONFIG_SOC_GS_PREFIX=${SRC_ROOT}/drivers/private/google-modules/soc/gs/
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
@@ -2183,8 +2186,8 @@ checkstack:
 	$(PERL) $(srctree)/scripts/checkstack.pl $(CHECKSTACK_ARCH)
 
 kernelrelease:
-	@echo 6.1.157-android14-11-g2c0cf7b3a827-ab14641137
-#	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
+#	@echo 6.1.157-android14-11-g2c0cf7b3a827-ab14641137
+	@echo 6.1.145-android14-11-gc1de4747ac59-ab14219743
 #	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion \
 #	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) "-android14-11-gc1de4747ac59-ab14219743" \
 #		$(srctree) $(BRANCH) $(KMI_GENERATION))"
