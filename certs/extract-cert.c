@@ -23,12 +23,43 @@
 #include <openssl/err.h>
 #include <openssl/engine.h>
 
+/* Manual declarations for OpenSSL 3.0 compatibility.
+ *
+ * First, we check if the host OS is using OpenSSL 3.0
+ * If it is, then we use this compatibility patch to
+ * load the deprecated OpenSSL Engine API (which is
+ * still used for kernel 6.1). This patch has been tested
+ * on AlmaLinux 10, but should work on any modern host OS
+ * build system.
+ *
+ * Author: micfogas <micfogas@technotic.us>
+ */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/opensslv.h>
+#include <openssl/x509.h>
+#ifndef OPENSSL_API_COMPAT
+#define OPENSSL_API_COMPAT 0x10100000L
+#endif // OPENSSL_API_COMPAT
+typedef struct engine_st ENGINE;
+ENGINE *ENGINE_by_id(const char *id);
+int ENGINE_init(ENGINE *e);
+int ENGINE_set_default(ENGINE *e, unsigned int flags);
+void ENGINE_load_builtin_engines(void);
+int ENGINE_free(ENGINE *e);
+int ENGINE_finish(ENGINE *e);
+int ENGINE_ctrl_cmd_string(ENGINE *e, const char *cmd, const char *arg, int cmd_optional);
+int ENGINE_ctrl_cmd(ENGINE *e, const char *cmd, long i, void *p, void (*f)(void), int cmd_optional);
+#define ENGINE_METHOD_ALL 0xFFFF
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif // OPENSSL_VERSION_NUMBER
+
 /*
  * OpenSSL 3.0 deprecates the OpenSSL's ENGINE API.
  *
  * Remove this if/when that API is no longer used
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 
 #define PKEY_ID_PKCS7 2
 
