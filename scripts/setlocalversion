@@ -19,11 +19,12 @@ usage() {
 res="-android14-11-gc1de4747ac59-ab14219743"
 scm_only=false
 srctree=.
-android_release=
-kmi_generation=
+android_release=14
+kmi_generation=11
 if test "$1" = "--save-scmversion"; then
 	cd "${srctree}"
-	echo "g2c0cf7b3a827" > .scmversion
+	echo "gc1de4747ac59" > .scmversion
+#	echo "g2c0cf7b3a827" > .scmversion
 	shift
 fi
 
@@ -38,7 +39,8 @@ scm_version()
 	short=false
 
 	cd "$srctree"
-	echo "g2c0cf7b3a827" > .scmversion
+	echo "gc1de4747ac59" > .scmversion
+#	echo "g2c0cf7b3a827" > .scmversion
 
 	if test -e .scmversion; then
 		cat .scmversion
@@ -52,7 +54,8 @@ scm_version()
 if $scm_only; then
 	if test ! -e .scmversion; then
 #		res=$(scm_version)
-		echo "g2c0cf7b3a827" > .scmversion
+		echo "gc1de4747ac59" > .scmversion
+#		echo "g2c0cf7b3a827" > .scmversion
 #		echo "$res" >.scmversion
 	fi
 	exit

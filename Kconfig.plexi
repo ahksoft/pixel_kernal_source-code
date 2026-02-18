@@ -91,7 +91,7 @@ menu "Modules"
 
 config PLEXI_BYPASS_CRC
 	  bool "Bypass CRC checksum verification for kernel modules"
-	  depends on MODULES && MODVERSIONS && !MODULE_SIG && !TRIM_UNUSED_KSYMS
+	  depends on MODVERSIONS && !TRIM_UNUSED_KSYMS
 	  default y
 	  help
 		By default, the Linux (and Android) kernels are designed to
@@ -133,7 +133,7 @@ endif
 
 # files affected: drivers/mmc/core/core.c; kernel/module/version.c
 comment "--Kernel module CRC checksum bypass unavailable--"
-	depends on !PLEXI_BYPASS_CRC
+	depends on !MODVERSIONS || TRIM_UNUSED_KSYMS
 #	help
 #		CRC checksum bypassing for kernel modules requires kernel
 #		modules and module versions to be enabled. The bypass is
