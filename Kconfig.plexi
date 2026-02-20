@@ -1,0 +1,211 @@
+menu "PlexiConfig"
+	  
+config PLEXI
+	bool "Enable plexicore custom kernel patches"
+	default y
+	  help
+		Enables the use of plexi-cores custom patches.
+
+		you should choose Y here. This exists for troubleshooting
+		and developer debugging. If you add your own custom patchrs
+		and experience ptoblems building or booting your kernel,
+		you can toggle this option off and recompile to verify
+		whether plexicore's code is conflicting with your code.
+
+if PLEXI
+
+config PLEXI_KVER
+	  bool "Customize Kernel Version data"
+	  default n
+
+if PLEXI_KVER
+
+config PLEXI_KVER_VERSION
+	  string "Kernel version"
+	  default "6.1.145"
+
+config PLEXI_KVER_KMI
+	  int "KMI Generation"
+	  default 11
+
+config PLEXI_KVER_ANDROID
+	  int "Android Release"
+	  default 14
+
+config PLEXI_KVER_COMMIT
+	  string "Commit build suffix"
+	  default "gc1de4747ac59-ab14219743"
+
+config PLEXI_KVER_DATE
+	  string "Build date and time"
+	  default "Mon Oct 6 12:00:00 UTC 2025"
+
+config PLEXI_KVER_SUFFIX
+	  string "Kernel version suffix"
+	  default "#1 SMP PREEMPT aarch64 Android"
+
+endif
+# if PLEXI_KVER
+
+#config PLEXI_TEST
+#	  bool "Test option"
+#	  depends on PLEXI && 64BIT
+#	depends on KSU != m
+#	  select PLEXI_TESTT
+#	  default n
+#	  help
+#		This is a test. This is only a test.
+#
+#
+#menu "Plexi Test"
+#	depends on PLEXI_TESTT
+#
+#endmenu
+
+#comment "-----"
+
+config PLEXI_SUKI_COMPAT
+	bool "SukiSU patch for manager compatibility"
+	default y
+	depends on KSU
+	help
+		A compatibility patch to set kernelsu version from 13000 to 13500
+		for compatibility with current manager.
+
+
+config PLEXI_STACK_GUARD_FIX
+	bool "Use fix for undefined symbol '__stack_chk_guard'"
+	default n
+	help
+		This changes the default behavior of Kconfig to use global stack protection
+		instead of sysreg and per_task. This should only be enabled if you get
+		the error:
+
+				Undefined symbol '__stack_chk_guard':
+
+		during linking of vmlinux.o.
+
+if MODULES
+
+menu "Modules"
+
+config PLEXI_BYPASS_CRC
+	  bool "Bypass CRC checksum verification for kernel modules"
+	  depends on MODVERSIONS && !TRIM_UNUSED_KSYMS
+	  default y
+	  help
+		By default, the Linux (and Android) kernels are designed to
+		check module checksums when trying too load kernel modules.
+		
+		Due to the way the Android GKI kernel is designed, this
+		can cause problems when trying to boot a GKI kernel boot
+		image. A warning is still fiven and written to dmesg, but
+		selecting this option forces a return(0);
+
+		If unsure, choose N here. If you encounter issues with
+		the kernel boot image not loading vendor modules from
+		your stock vendor dlkm image, you can choose Y here.
+
+if PLEXI_BYPASS_CRC
+
+config PLEXI_BYPASS_CRC_SILENT
+	bool "Hide version mismatch messages"
+	default n
+	help
+		When a version mismatch is found between a kernel module and
+		the kernel version, a warning is normally displayed. In our
+		CRC checksum bypass, we instruct the kernel to load the module
+		anyway. However, we still display a warning. Choosing Y here
+		will silence these warnings so they won't appear in the log.
+		This has no impact on actual kernel module loading.
+
+		Unless you are debugging a module loading problem or
+		enjoy debug warning messages, you can safely choose Y here.
+
+		Note: this option currently defaults to N because we don't
+		want to hide warning for users automatically. Once the user
+		is aware of the warnings and understands their cause, they
+		can decide for themselves whether they want to continue
+		seeing them or not.
+
+endif
+# if PLEXI_BYPASS_CRC
+
+# files affected: drivers/mmc/core/core.c; kernel/module/version.c
+comment "--Kernel module CRC checksum bypass unavailable--"
+	depends on !MODVERSIONS || TRIM_UNUSED_KSYMS
+#	help
+#		CRC checksum bypassing for kernel modules requires kernel
+#		modules and module versions to be enabled. The bypass is
+#		not available if module signatures or trimming of unused
+#		symbols from kernel modules options are enabled.
+
+#config PLEXI_DISABLE_DIRTY
+#	  bool "Disable '-dirty' kernel version tagging"
+#	  depends on PLEXI
+#	  default y
+#	  help
+#		Android kernel, like Linux kernel, performs a check during
+#		build time against the source git repository. If the wotking tree
+#		has been modified and 'git status' shows any changes exist,
+#		the kernel is normally built with '-dirty' appended to
+#		the kernel version.
+#
+#		Choosing Y disables that functionality.
+#config PLEXI_USE_EXT
+#	def_bool n
+#
+#if PLEXI_USE_EXT
+#
+#config PLEXI_RAVIOLE_EXT
+#	bool "Use raviole-specific external modules"
+#	default n
+#	help
+#		This allows for building in the external modules included in the
+#		KERNEL_HOME\/private\/devices\/google\/raviole dir.
+#		
+#		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
+#		
+#		If unsure, select N
+#
+#config PLEXI_GS101_EXT
+#	bool "Use gs101-specific external modules"
+#	default n
+#	help
+#		This allows for building in the external modules included in the
+#		KERNEL_HOME\/private\/devices\/google\/gs101 dir.
+#		
+#		NOTE: DO NOT SELECT THIS IF YOU DO NOT HAVE THE PRIVATE DIR
+#		
+#		If unsure, select N
+#
+#
+#if PLEXI_RAVIOLE_EXT
+#
+#menu "External raviole modules"
+#
+#source "drivers/private/devices/google/raviole/Kconfig.ext.raviole"
+#
+#endmenu
+#
+#endif
+#
+#if PLEXI_GS101_EXT
+#
+#menu "External gs101 modules"
+#
+#source "drivers/private/devices/google/gs101/Kconfig.ext.gs101"
+#
+#endmenu
+#
+#endif
+#
+#endif
+
+endmenu
+
+endif
+
+endif
+
+endmenu

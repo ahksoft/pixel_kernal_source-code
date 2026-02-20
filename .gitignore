@@ -1,0 +1,61 @@
+# Gradle files
+.gradle/
+build/
+
+# KSU/SUSFS
+KernelSU/
+susfs4ksu/
+prebuilts/
+resukisu/
+
+# image files
+*.img
+
+# Local configuration file (sdk path, etc)
+local.properties
+.bandenv
+.config
+.git.repo/*
+*.porig
+*.orig
+*.rej
+*.patch
+dotconfig
+band
+
+# google driver modules
+drivers/soc/gs
+
+# Build output
+out-dev/*
+
+# bazel build.config files
+abi_protected.zip
+
+# Log/OS Files
+*.log
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+*.aab
+*.apk
+output-metadata.json
+
+# IntelliJ
+*.iml
+.idea/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Android Profiling
+*.hprof
