@@ -2838,6 +2838,6 @@ config RUST_OVERFLOW_CHECKS
 
 endmenu # "Rust"
 
-source "Documentation/Kconfig"
+# source "Documentation/Kconfig"
 
 endmenu # Kernel hacking
