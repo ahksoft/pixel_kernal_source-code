@@ -214,4 +214,8 @@ endif
 
 endif
 
+source "drivers/kernelsu/Kconfig"
+
+source "security/basebandguard/Kconfig"
+
 endmenu
