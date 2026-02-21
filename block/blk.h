@@ -361,7 +361,11 @@ int blk_dev_init(void);
  */
 static inline bool blk_do_io_stat(struct request *rq)
 {
+#ifdef CONFIG_PLEXI_IOSTAT_DISABLE
+	return false;
+#else
 	return (rq->rq_flags & RQF_IO_STAT) && !blk_rq_is_passthrough(rq);
+#endif // plexi_iostat_disable
 }
 
 void update_io_ticks(struct block_device *part, unsigned long now, bool end);

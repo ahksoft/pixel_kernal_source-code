@@ -64,14 +64,20 @@ endif
 
 #comment "-----"
 
-config PLEXI_SUKI_COMPAT
-	bool "SukiSU patch for manager compatibility"
+#config PLEXI_SUKI_COMPAT
+#	bool "SukiSU patch for manager compatibility"
+#	default n
+#	depends on KSU
+#	help
+#		A compatibility patch to set kernelsu version from 13000 to 13500
+#		for compatibility with current manager.
+
+config PLEXI_IOSTAT_DISABLE
+	bool "Disable iostat"
 	default y
 	depends on KSU
 	help
-		A compatibility patch to set kernelsu version from 13000 to 13500
-		for compatibility with current manager.
-
+		Enable this to disable IOSTAT completely
 
 config PLEXI_STACK_GUARD_FIX
 	bool "Use fix for undefined symbol '__stack_chk_guard'"
@@ -110,7 +116,7 @@ if PLEXI_BYPASS_CRC
 
 config PLEXI_BYPASS_CRC_SILENT
 	bool "Hide version mismatch messages"
-	default n
+	default y
 	help
 		When a version mismatch is found between a kernel module and
 		the kernel version, a warning is normally displayed. In our
