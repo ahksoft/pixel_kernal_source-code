@@ -2219,12 +2219,25 @@ config RANDOMIZE_MODULE_REGION_FULL
 	  particular case of region exhaustion, modules might be able to fall
 	  back to a larger 2GB area.
 
+if PLEXI_STACK_GUARD_FIX
+
+config CC_HAVE_STACKPROTECTOR_GLOBAL
+	def_bool $(cc-option,-mstack-protector-guard=global -mstack-protector-guard-reg=sp_el0)
+	help
+	  Probes the compiler for Global Stack Protector support. This helps resolve
+	  an issue resulting in undefined __stack_chk_guard symbols.
+
+endif
+
 config CC_HAVE_STACKPROTECTOR_SYSREG
+	# Only enable this if Global is NOT supported or if explicitly required
 	def_bool $(cc-option,-mstack-protector-guard=sysreg -mstack-protector-guard-reg=sp_el0 -mstack-protector-guard-offset=0)
+	depends on !CC_HAVE_STACKPROTECTOR_GLOBAL
 
 config STACKPROTECTOR_PER_TASK
 	def_bool y
-	depends on STACKPROTECTOR && CC_HAVE_STACKPROTECTOR_SYSREG
+	# Only use Per-Task if Global isn't being used and Sysreg is available
+	depends on STACKPROTECTOR && CC_HAVE_STACKPROTECTOR_SYSREG && !CC_HAVE_STACKPROTECTOR_GLOBAL
 
 # The GPIO number here must be sorted by descending number. In case of
 # a multiplatform kernel, we just want the highest value required by the

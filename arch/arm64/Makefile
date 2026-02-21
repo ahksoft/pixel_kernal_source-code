@@ -53,6 +53,14 @@ KBUILD_CFLAGS	+= -fasynchronous-unwind-tables
 KBUILD_AFLAGS	+= -fasynchronous-unwind-tables
 endif
 
+# Force global guard if per-task is disabled (your new default)
+ifeq ($(CONFIG_STACKPROTECTOR_GLOBAL),y)
+prepare: stack_protector_prepare
+stack_protector_prepare: prepare0
+    KBUILD_CFLAGS += -mstack-protector-guard=global -mstack-protector-guard-reg=sp_el0
+endif
+
+# If the compiler does not have the global guard functionality, revert to old default
 ifeq ($(CONFIG_STACKPROTECTOR_PER_TASK),y)
 prepare: stack_protector_prepare
 stack_protector_prepare: prepare0
