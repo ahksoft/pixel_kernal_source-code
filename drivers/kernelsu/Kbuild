@@ -51,7 +51,6 @@ GIT_BIN := /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin git
 CURL_BIN := /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin curl
 
 #KSU_SRC := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-KSU_SRC := /root/buildroot/akernel-raviole-14810637/aosp/drivers/kernelsu
 
 #LOCAL_GIT_EXISTS := $(shell test -e $(KSU_SRC)/../.git && echo 1 || echo 0)
 
@@ -65,14 +64,18 @@ KSU_SRC := /root/buildroot/akernel-raviole-14810637/aosp/drivers/kernelsu
 #$(shell cd $(KSU_SRC); [ -f ../.git/shallow ] && $(GIT_BIN) fetch --unshallow)
 #KSU_LOCAL_VERSION := $(shell cd $(KSU_SRC); $(GIT_BIN) rev-list --count HEAD)
 #KSU_VERSION := $(shell expr 30000 + $(KSU_LOCAL_VERSION) + 700)
+
 #KSU_TAG_NAME    := $(shell cd $(KSU_SRC); $(GIT_BIN) describe --abbrev=0 --tags 2>/dev/null || echo "unknown")
 #KSU_COMMIT_SHA  := $(shell cd $(KSU_SRC); $(GIT_BIN) rev-parse --short=8 HEAD 2>/dev/null || echo "unknown")
 #KSU_BRANCH_NAME := $(shell cd $(KSU_SRC); $(GIT_BIN) branch --show-current 2>/dev/null || echo "unknown")
-KSU_LOCAL_VERSION := 3879
-KSU_VERSION	:= 34279
-KSU_TAG_NAME	:= v4.1.0
-KSU_COMMIT_SHA	:= 21a2801a
-KSU_BRANCH_NAME	:= main
+KSU_SRC := /root/buildroot/akernel-raviole-14810637/aosp/drivers/kernelsu
+
+KSU_LOCAL_VERSION := 3895
+KSU_VERSION     := 34295
+KSU_TAG_NAME    := v4.1.0
+KSU_COMMIT_SHA  := 47167aa7
+KSU_BRANCH_NAME := main
+
 # make ddk happy
 ifneq ($(KDIR),)
 CONFIG_KSU_FULL_NAME_FORMAT := "%TAG_NAME%-%COMMIT_SHA%@%REPO_NAME%"
@@ -317,6 +320,12 @@ ifeq ($(CONFIG_KSU_MANUAL_HOOK), y)
     $(error You should integrate $(REPO_NAME) in your kernel correctly.)
   endif
 
+  ifeq ($(shell grep -q "is_ksu_transition" $(srctree)/security/selinux/hooks.c; echo $$?),0)
+    $(info -- is_ksu_transition is incompatible hook)
+    $(info -- Read: https://resukisu.github.io/guide/manual-integrate.html)
+    $(error You should integrate $(REPO_NAME) in your kernel correctly.)
+  endif
+
   ifeq ($(CONFIG_KSU_MANUAL_HOOK_AUTO_INPUT_HOOK), y)
     $(info -- $(REPO_NAME)/manual_hook: You are using input_handler for input hooks.)
   else
@@ -375,16 +384,6 @@ ifeq ($(CONFIG_KSU_MANUAL_HOOK), y)
     $(info -- You lost ksu_handle_sys_reboot hook in your kernel)
     $(info -- Read: https://resukisu.github.io/guide/manual-integrate.html)
     $(error You should integrate $(REPO_NAME) in your kernel.)
-  endif
-
-  ifeq ($(shell test $(VERSION) -lt 4 || { test $(VERSION) -eq 4 && test $(PATCHLEVEL) -lt 10; } && echo y),y)
-    ifeq ($(shell grep -q "is_ksu_transition" $(srctree)/security/selinux/hooks.c; echo $$?),0)
-      $(info -- $(REPO_NAME)/manual_hook: is_ksu_transition found)
-    else
-      $(info -- You lost is_ksu_transition hook in your kernel)
-      $(info -- Read: https://resukisu.github.io/guide/manual-integrate.html)
-      $(error You should integrate $(REPO_NAME) in your kernel.)
-    endif
   endif
 endif
 
