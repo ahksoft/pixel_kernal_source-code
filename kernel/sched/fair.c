@@ -8358,6 +8358,16 @@ static int task_hot(struct task_struct *p, struct lb_env *env)
 	return delta < (s64)sysctl_sched_migration_cost;
 }
 
+#ifdef CONFIG_SCHED_CASS
+#include "cass.c"
+/* Use CASS. A dummy wrapper ensures the replaced function is still "used". */
+static inline void *select_task_rq_fair_dummy(void)
+{
+	return (void *)select_task_rq_fair;
+}
+#define select_task_rq_fair cass_select_task_rq_fair
+#endif /* CONFIG_SCHED_CASS */
+
 #ifdef CONFIG_NUMA_BALANCING
 /*
  * Returns 1, if task migration degrades locality
@@ -9946,6 +9956,11 @@ static void update_idle_cpu_scan(struct lb_env *env,
 	struct sched_domain_shared *sd_share;
 	int llc_weight, pct;
 	u64 x, y, tmp;
+
+	/* CASS doesn't use this, so this can be skipped as an optimization */
+	if (IS_ENABLED(CONFIG_SCHED_CASS))
+		return;
+
 	/*
 	 * Update the number of CPUs to scan in LLC domain, which could
 	 * be used as a hint in select_idle_cpu(). The update of sd_share

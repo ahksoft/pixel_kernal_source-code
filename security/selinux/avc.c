@@ -747,15 +747,6 @@ static void avc_audit_post_callback(struct audit_buffer *ab, void *a)
 		goto bypass_orig_flow;
 	}
 #endif
-#ifdef CONFIG_KSU_SUSFS
-	if (unlikely(sad->tsid == susfs_ksu_sid && READ_ONCE(susfs_is_avc_log_spoofing_enabled))) {
-		if (rc)
-			audit_log_format(ab, " tsid=%d", susfs_priv_app_sid);
-		else
-			audit_log_format(ab, " tcontext=%s", "u:r:priv_app:s0:c512,c768");
-		goto bypass_orig_flow;
-	}
-#endif
 	if (rc)
 		audit_log_format(ab, " tsid=%d", sad->tsid);
 	else

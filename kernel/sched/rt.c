@@ -5,6 +5,7 @@
  */
 
 #include <trace/hooks/sched.h>
+#include "cass_rt.h"
 
 int sched_rr_timeslice = RR_TIMESLICE;
 /* More than 4 hours if BW_SHIFT equals 20. */
