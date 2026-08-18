@@ -43,6 +43,21 @@ jobs:
 
           echo "CONFIG_KSU_SUSFS=y" >> arch/arm64/configs/gki_defconfig
 
+      - name: Fix SUSFS patch compat issues
+        run: |
+          cd kernel
+
+          # Fix 1: fs/proc/task_mmu.c - unused variable 'vma' when SUS_MAP not enabled
+          # The SUSFS patch declares vma outside #ifdef guard
+          sed -i 's/struct vm_area_struct \*vma;$/struct vm_area_struct *vma __maybe_unused;/' fs/proc/task_mmu.c
+
+          # Fix 2: security/selinux/avc.c - type mismatch
+          # The SUSFS patch defines susfs_is_avc_log_spoofing_enabled as bool
+          # but susfs.h declares it as struct static_key_false
+          sed -i 's/^bool susfs_is_avc_log_spoofing_enabled = false;/struct static_key_false susfs_is_avc_log_spoofing_enabled;/' security/selinux/avc.c
+
+          echo "[+] Applied SUSFS compat fixes"
+
       - name: Build kernel
         run: |
           cd kernel
@@ -56,7 +71,6 @@ jobs:
           grep -q "CONFIG_KSU=y" out/.config && echo "[+] KSU enabled"
           grep -q "CONFIG_KSU_SUSFS=y" out/.config && echo "[+] SUSFS enabled"
 
-          # Kernel lz4 uses legacy format (-l flag), no frame header
           lz4 -c -l -12 out/arch/arm64/boot/Image > out/Image.lz4
           ls -lh out/Image.lz4
 
