@@ -47,14 +47,15 @@ jobs:
         run: |
           cd kernel
 
-          # Fix 1: fs/proc/task_mmu.c - unused variable 'vma' when SUS_MAP not enabled
-          # The SUSFS patch declares vma outside #ifdef guard
+          # Fix 1: fs/proc/task_mmu.c - unused variable 'vma' [-Werror,-Wunused-variable]
+          # The SUSFS patch adds a vma declaration that may not be used if CONFIG_KSU_SUSFS_SUS_MAP
+          # is not set. Mark it __maybe_unused to suppress the error.
           sed -i 's/struct vm_area_struct \*vma;$/struct vm_area_struct *vma __maybe_unused;/' fs/proc/task_mmu.c
 
-          # Fix 2: security/selinux/avc.c - type mismatch
-          # The SUSFS patch defines susfs_is_avc_log_spoofing_enabled as bool
-          # but susfs.h declares it as struct static_key_false
-          sed -i 's/^bool susfs_is_avc_log_spoofing_enabled = false;/struct static_key_false susfs_is_avc_log_spoofing_enabled;/' security/selinux/avc.c
+          # Fix 2: security/selinux/avc.c - redeclaration type mismatch
+          # The SUSFS patch defines it as 'bool' but susfs.h declares 'struct static_key_false'
+          # Change the definition to match using DEFINE_STATIC_KEY_FALSE
+          sed -i 's/^bool susfs_is_avc_log_spoofing_enabled = false;/DEFINE_STATIC_KEY_FALSE(susfs_is_avc_log_spoofing_enabled);/' security/selinux/avc.c
 
           echo "[+] Applied SUSFS compat fixes"
 
