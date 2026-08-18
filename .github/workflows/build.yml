@@ -14,7 +14,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq git curl cpio lz4 flex bison bc \
             libssl-dev libelf-dev binutils-aarch64-linux-gnu \
-            clang lld llvm dwarves
+            clang lld llvm dwarves rustc cargo
 
       - name: Clone kernel source (ahksoft/pixel_kernal_source-code)
         run: |
