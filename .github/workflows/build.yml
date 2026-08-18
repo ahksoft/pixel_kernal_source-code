@@ -46,6 +46,7 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel
+          mkdir -p out 
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
 
