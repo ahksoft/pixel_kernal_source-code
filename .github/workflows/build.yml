@@ -20,7 +20,7 @@ jobs:
         run: |
           git clone https://github.com/ahksoft/pixel_kernal_source-code.git kernel
           cd kernel
-          git checkout r260221
+          git checkout main
 
       - name: Apply KernelSU-Next (legacy-susfs tag)
         run: |
